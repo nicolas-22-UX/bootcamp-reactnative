@@ -5,13 +5,13 @@
 // Reemplaza estos datos con información coherente a tu dominio.
 // ============================================================
 
-import { Item } from '../types';
+import { project } from '../types';
 
 // TODO: Reemplaza los valores por datos reales de tu dominio
 // Usa imágenes representativas — puedes usar URLs de picsum.photos
 // o incluir imágenes locales en assets/
 
-export const MOCK_ITEMS: Item[] = [
+export const MOCK_ITEMS: project[] = [
   {
     id: '1',
     name: 'Nombre del elemento 1',

@@ -13,11 +13,11 @@ import {
   Pressable,
   StyleSheet,
 } from 'react-native';
-import { Item } from '../types';
+import { project } from '../types';
 
 interface ItemCardProps {
-  item: Item;
-  onPress: (item: Item) => void;
+  item: project;
+  onPress: (item: project) => void;
 }
 
 export function ItemCard({ item, onPress }: ItemCardProps): React.JSX.Element {

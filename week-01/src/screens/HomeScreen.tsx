@@ -14,7 +14,7 @@ import {
   SafeAreaView,
   StatusBar,
 } from 'react-native';
-import { Item } from '../types';
+import { project } from '../types';
 import { ItemCard } from '../components/ItemCard';
 import { MOCK_ITEMS } from '../data/mockData';
 
@@ -28,7 +28,7 @@ export function HomeScreen(): React.JSX.Element {
    * Handles item card press.
    * For now, just logs the item name. In week-03 we'll add navigation.
    */
-  function handleItemPress(item: Item): void {
+  function handleItemPress(item: project): void {
     // TODO: Mostrar un alert o log con el nombre del item
     console.log('Item seleccionado:', item.name);
   }

@@ -7,7 +7,7 @@
 
 // TODO: Renombra esta interfaz con el nombre de tu elemento
 // Ejemplos: Book, Medication, Member, Dish, Movie, Destination
-export interface Item {
+export interface project {
   id: string;
   name: string;
   imageUri: string;
