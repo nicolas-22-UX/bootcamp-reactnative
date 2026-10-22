@@ -17,7 +17,7 @@ const STATUS_LABELS: Record<ProjectStatus, string> = {
 //tarjeta de un projecto: imagen arriba y los datos debajo. Al presionar la tarjeta, se ejecuta la función onPress con el proyecto como argumento.
 export function ItemCard({ item, onPress }: ItemCardProps): React.JSX.Element {
   return (
-    <Pressable style={styles.card} onPress={() => onPress(item)}>
+    <Pressable style={({ pressed }) => [styles.card, pressed && styles.cardPressed]} onPress={() => onPress(item)}>
       <Image source={{ uri: item.imageUri }} style={styles.image} resizeMode="cover" />
       <View style={styles.body}>
         <Text style={styles.name}>{item.name}</Text>
@@ -45,6 +45,9 @@ const styles = StyleSheet.create({
     overflow: "hidden",
     borderWidth: 1,
     borderColor: "#30363d",
+  },
+  cardPressed: {
+    opacity: 0.7,
   },
   image: {
     width: "100%",
