@@ -13,6 +13,10 @@ Empresa de proyectos de software de Nicolás Aparicio. Cada tarjeta es un proyec
 - Tres estados, cada uno con su color: En desarrollo, En garantía y En pausa.
 - Al presionar una tarjeta baja su opacidad y aparece un aviso con el cliente.
 
+## Captura
+
+![Pantalla principal con la lista de proyectos](docs/screenshot.webp)
+
 ## Cómo ejecutarla
 
 ```bash
