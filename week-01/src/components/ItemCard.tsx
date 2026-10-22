@@ -1,93 +1,101 @@
-// ============================================================
-// COMPONENT: ItemCard
-// ============================================================
-// Tarjeta reutilizable para mostrar un elemento del dominio.
-// Este componente se renderiza por cada item en HomeScreen.
-// ============================================================
-
-import React from 'react';
-import {
-  View,
-  Text,
-  Image,
-  Pressable,
-  StyleSheet,
-} from 'react-native';
-import { Project } from '../types';
+import react from "react";
+import {View, Text, Image, Pressable, StyleSheet, ViewStyle } from "react-native";
+import { Project, ProjectStatus } from "../types";
 
 interface ItemCardProps {
   item: Project;
   onPress: (item: Project) => void;
 }
 
+//texto en español que se muestra en la tarjeta según el estado del proyecto
+const STATUS_LABELS: Record<ProjectStatus, string> = {
+  active: "En desarrollo",
+  warranty: "En garantía",
+  paused: "En pausa",
+};
+
+//tarjeta de un projecto: imagen arriba y los datos debajo. Al presionar la tarjeta, se ejecuta la función onPress con el proyecto como argumento.
 export function ItemCard({ item, onPress }: ItemCardProps): React.JSX.Element {
   return (
-    // TODO: Implementar el layout de la tarjeta usando Flexbox
-    // La tarjeta debe mostrar: imagen, nombre, subtítulo y un botón de acción
-    //
-    // Estructura sugerida:
-    // <Pressable style={...} onPress={() => onPress(item)}>
-    //   <Image source={{ uri: item.imageUri }} style={...} resizeMode="cover" />
-    //   <View style={...}>
-    //     <Text style={...}>{item.name}</Text>
-    //     <Text style={...}>{item.subtitle}</Text>
-    //     {/* TODO: Agrega las propiedades específicas de tu dominio */}
-    //   </View>
-    // </Pressable>
-    <View style={styles.placeholder}>
-      <Text style={styles.placeholderText}>ItemCard — por implementar</Text>
-      <Text style={styles.placeholderHint}>{item.name}</Text>
-    </View>
+    <Pressable style={styles.card} onPress={() => onPress(item)}>
+      <Image source={{ uri: item.imageUri }} style={styles.image} resizeMode="cover" />
+      <View style={styles.body}>
+        <Text style={styles.name}>{item.name}</Text>
+        <Text style={styles.subtitle}>{item.subtitle}</Text>
+
+        {/*fila: cliente a la izquierda, estado a la drecha*/}
+        <View style={styles.row}>
+          <Text style={styles.client}>{item.client}</Text>
+          <View style={[styles.badge, STATUS_STYLES[item.status]]}>
+            <Text style={styles.badgeText}>{STATUS_LABELS[item.status]}</Text>
+          </View>
+        </View>
+
+      <Text style={styles.date}>Entrega: {item.deliveryDate}</Text>
+      </View>
+    </Pressable>
   );
 }
-
+          
 const styles = StyleSheet.create({
-  // TODO: Reemplaza estos estilos placeholder con los de tu tarjeta
-  placeholder: {
-    backgroundColor: '#161b22',
+  card: {
+    backgroundColor: "#161b22",
     borderRadius: 12,
-    padding: 24,
     marginBottom: 12,
+    overflow: "hidden",
     borderWidth: 1,
-    borderColor: '#30363d',
-    borderStyle: 'dashed',
-    alignItems: 'center',
+    borderColor: "#30363d",
   },
-  placeholderText: {
-    color: '#8b949e',
+  image: {
+    width: "100%",
+    height: 160,
+  },
+  body: {
+    padding: 16,
+    gap: 6,
+  },
+  name: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: "#ffffff",
+  },
+  subtitle: {
+    fontSize: 14,
+    color: "#8b949e",
+  },
+  row: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginTop: 4,
+  },
+  client: {
+    fontSize: 14,
+    color: "#c9d1d9",
+  },
+  badge: {
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 12,
+  },
+  badgeText: {
     fontSize: 12,
-    marginBottom: 4,
+    fontWeight: "bold",
+    color: "#ffffff",
   },
-  placeholderHint: {
-    color: '#ffffff',
-    fontSize: 16,
-    fontWeight: 'bold',
+  date: {
+    fontSize: 12,
+    color: "#8b949e",
   },
-
-  // Estilos sugeridos para la tarjeta real — descomenta y adapta:
-  // card: {
-  //   backgroundColor: '#161b22',
-  //   borderRadius: 12,
-  //   marginBottom: 12,
-  //   overflow: 'hidden',
-  //   borderWidth: 1,
-  //   borderColor: '#30363d',
-  // },
-  // cardImage: {
-  //   width: '100%',
-  //   height: 160,
-  // },
-  // cardBody: {
-  //   padding: 16,
-  //   gap: 4,
-  // },
-  // cardName: {
-  //   fontSize: 18,
-  //   fontWeight: 'bold',
-  //   color: '#ffffff',
-  // },
-  // cardSubtitle: {
-  //   fontSize: 14,
-  //   color: '#8b949e',
-  // },
+    badgeActive: { backgroundColor: "#2ea043" },
+  badgeWarranty: { backgroundColor: "#1f6feb" },
+  badgePaused: { backgroundColor: "#9e6a03" },
 });
+
+// Color de la etiqueta según el estado. Va después de los estilos porque los usa.
+const STATUS_STYLES: Record<ProjectStatus, ViewStyle> = {
+  active: styles.badgeActive,
+  warranty: styles.badgeWarranty,
+  paused: styles.badgePaused,
+};
+
