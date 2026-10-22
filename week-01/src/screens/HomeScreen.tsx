@@ -4,10 +4,10 @@ import {
   Text,
   ScrollView,
   StyleSheet,
-  SafeAreaView,
   StatusBar,
   Alert,
-} from "react-native";
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Project } from "../types";
 import { ItemCard } from "../components/ItemCard";
 import { MOCK_ITEMS } from "../data/mockData";
