@@ -1,5 +1,5 @@
 // src/screens/DetailScreen.tsx
-// Pantalla de detalle: recibe los datos del ítem por params.
+// Detalle de un proyecto: lee los params del Stack.
 
 import { useRoute } from '@react-navigation/native';
 import type { RouteProp } from '@react-navigation/native';
@@ -7,15 +7,29 @@ import { ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { COLORS, RADIUS, SPACING, TYPOGRAPHY } from '../theme';
 import type { HomeStackParamList } from '../navigation/types';
+import type { ProjectStatus } from '../types';
 
-// Tipo de la ruta para leer los params tipados
 type DetailScreenRouteProp = RouteProp<HomeStackParamList, 'HomeDetail'>;
+
+// Texto del estado
+const STATUS_LABELS: Record<ProjectStatus, string> = {
+  active: 'En desarrollo',
+  warranty: 'En garantía',
+  paused: 'En pausa',
+};
 
 export function DetailScreen(): React.JSX.Element {
   // useRoute devuelve los params enviados desde HomeScreen
   const route = useRoute<DetailScreenRouteProp>();
-  const { id, name } = route.params;
-  // TODO: leer los campos del dominio (client, status, deliveryDate)
+  const { id, name, subtitle, client, status, deliveryDate } = route.params;
+
+  // Campos que se muestran en el detalle
+  const fields = [
+    { label: 'Descripción', value: subtitle },
+    { label: 'Cliente', value: client },
+    { label: 'Estado', value: STATUS_LABELS[status] },
+    { label: 'Fecha de entrega', value: deliveryDate },
+  ];
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
@@ -25,13 +39,12 @@ export function DetailScreen(): React.JSX.Element {
         <Text style={styles.badgeText}>ID: {id}</Text>
       </View>
 
-      {/* TODO: mostrar los campos del dominio con el patrón field/fieldLabel/fieldValue */}
-
-      <View style={styles.placeholder}>
-        <Text style={styles.placeholderText}>
-          Agrega aquí los campos de detalle de tu dominio
-        </Text>
-      </View>
+      {fields.map((field) => (
+        <View key={field.label} style={styles.field}>
+          <Text style={styles.fieldLabel}>{field.label}</Text>
+          <Text style={styles.fieldValue}>{field.value}</Text>
+        </View>
+      ))}
     </ScrollView>
   );
 }
@@ -82,19 +95,5 @@ const styles = StyleSheet.create({
   fieldValue: {
     fontSize: TYPOGRAPHY.size.base,
     color: COLORS.textPrimary,
-  },
-  placeholder: {
-    backgroundColor: COLORS.surfaceAlt,
-    borderRadius: RADIUS.md,
-    padding: SPACING.xl,
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    borderStyle: 'dashed',
-  },
-  placeholderText: {
-    fontSize: TYPOGRAPHY.size.sm,
-    color: COLORS.textMuted,
-    textAlign: 'center',
   },
 });
