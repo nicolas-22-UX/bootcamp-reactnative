@@ -1,52 +1,45 @@
 import React from 'react';
 import { View, Text, Pressable, StyleSheet } from 'react-native';
-import { Item } from '../types';
+import { Project, ProjectStatus } from '../types';
 import { COLORS, TYPOGRAPHY, SPACING, RADIUS } from '../theme';
 
 interface ItemCardProps {
-  item: Item;
-  onPress: (item: Item) => void;
+  item: Project;
+  onPress: (item: Project) => void;
 }
 
-/**
- * Tarjeta reutilizable para mostrar un elemento del dominio.
- * Personaliza el contenido según los campos de tu interfaz Item.
- */
+// Texto y color del badge según el estado del proyecto.
+const STATUS_LABELS: Record<ProjectStatus, string> = {
+  active: 'En desarrollo',
+  warranty: 'En garantía',
+  paused: 'En pausa',
+};
+
+const STATUS_COLORS: Record<ProjectStatus, string> = {
+  active: COLORS.success,
+  warranty: COLORS.info,
+  paused: COLORS.warning,
+};
+
+// Tarjeta reutilizable: muestra un proyecto y avisa cuando la tocan.
 export function ItemCard({ item, onPress }: ItemCardProps): React.JSX.Element {
   return (
     <Pressable
-      style={({ pressed }) => [
-        styles.card,
-        pressed && styles.cardPressed,
-      ]}
+      style={({ pressed }) => [styles.card, pressed && styles.cardPressed]}
       onPress={() => onPress(item)}
       accessibilityRole="button"
       accessibilityLabel={item.name}
     >
-      {/* Nombre principal del elemento */}
       <Text style={styles.itemName}>{item.name}</Text>
+      <Text style={styles.fieldText}>{item.subtitle}</Text>
+      <Text style={styles.fieldText}>Cliente: {item.client}</Text>
+      <Text style={styles.fieldText}>Entrega: {item.deliveryDate}</Text>
 
-      {/* TODO: Mostrar los campos adicionales de tu dominio */}
-      {/* Ejemplos:
-        Biblioteca:
-          <Text style={styles.fieldText}>{item.author}</Text>
-          <Text style={styles.fieldText}>{item.available ? 'Disponible' : 'Prestado'}</Text>
-
-        Farmacia:
-          <Text style={styles.fieldText}>${item.price}</Text>
-          <Text style={styles.fieldText}>Stock: {item.stock}</Text>
-
-        Gimnasio:
-          <Text style={styles.fieldText}>Plan: {item.plan}</Text>
-          <Text style={styles.fieldText}>Vence: {item.expiresAt}</Text>
-      */}
-
-      {/* TODO: Si tu dominio tiene un badge de estado/categoría, agrégalo aquí */}
-      {/* Ejemplo:
-        <View style={styles.badge}>
-          <Text style={styles.badgeText}>{item.category}</Text>
-        </View>
-      */}
+      <View style={styles.badge}>
+        <Text style={[styles.badgeText, { color: STATUS_COLORS[item.status] }]}>
+          {STATUS_LABELS[item.status]}
+        </Text>
+      </View>
     </Pressable>
   );
 }
@@ -55,9 +48,9 @@ const styles = StyleSheet.create({
   card: {
     backgroundColor: COLORS.surface,
     borderRadius: RADIUS.md,
-    padding: SPACING.base,
+    padding: SPACING.md,
     marginHorizontal: SPACING.base,
-    marginVertical: SPACING.xs,
+    marginVertical: SPACING.sm,
     borderWidth: 1,
     borderColor: COLORS.border,
   },
@@ -81,12 +74,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: SPACING.sm,
     paddingVertical: 3,
     borderRadius: RADIUS.full,
-    backgroundColor: COLORS.accentDim,
+    backgroundColor: COLORS.surfaceAlt,
   },
   badgeText: {
     fontSize: TYPOGRAPHY.size.xs,
     fontWeight: TYPOGRAPHY.weight.semibold,
-    color: COLORS.accent,
-    textTransform: 'capitalize',
   },
 });
