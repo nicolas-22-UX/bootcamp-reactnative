@@ -1,32 +1,18 @@
-// src/navigation/types.ts
-// Define los tipos de parámetros para cada navigator.
-// Esto habilita autocompletado y verificación en tiempo de compilación.
+//src/navigation/types.ts
+// Tipos de params de cada navigator
 
-// ============================================
-// TAB NAVIGATOR — pantallas de nivel raíz
-// ============================================
+import type { Project } from "../types";
+
+//pestañas de la raíz
 
 export type RootTabParamList = {
-  // Pestaña principal con Stack interno (lista → detalle)
-  Home: undefined;
-  // Pestaña secundaria de favoritos
+  Home: undefined; //pestaña con Stack interno
   Favorites: undefined;
 };
 
-// ============================================
-// STACK NAVIGATOR — anidado dentro de la pestaña Home
-// ============================================
-
+//Stack dentro de la pestaña Home 
 export type HomeStackParamList = {
-  // Pantalla de lista (sin params)
   HomeList: undefined;
-  // Pantalla de detalle — recibe id y name como mínimo
-  // TODO: agregar campos específicos de tu dominio
-  // Ejemplo (Biblioteca):   author: string; isbn: string;
-  // Ejemplo (Farmacia):     price: number; stock: number;
-  // Ejemplo (Cine):         director: string; year: number;
-  HomeDetail: {
-    id: string;
-    name: string;
-  };
-};
+  //el detalle recibe el proyecto completo
+  HomeDetail: Project;
+}

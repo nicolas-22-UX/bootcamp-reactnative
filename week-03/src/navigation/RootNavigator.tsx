@@ -1,10 +1,5 @@
 // src/navigation/RootNavigator.tsx
-// Configura la estructura completa de navegación:
-//   Tab Navigator (raíz)
-//     └── Home tab  → HomeStack (Stack Navigator anidado)
-//           ├── HomeList  (lista de elementos)
-//           └── HomeDetail (detalle de un elemento con params)
-//     └── Favorites tab → FavoritesScreen
+// Tab (raíz) -> Home (Stack: lista -> detalle) y Favorites.
 
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
@@ -16,95 +11,78 @@ import { HomeScreen } from '../screens/HomeScreen';
 import { COLORS } from '../theme';
 import type { HomeStackParamList, RootTabParamList } from './types';
 
-// ============================================
-// STACK INTERNO — para la pestaña Home
-// ============================================
-
+// Stack interno de la pestaña Home
 const HomeStack = createNativeStackNavigator<HomeStackParamList>();
 
-/**
- * Navigator que gestiona la navegación dentro de la pestaña Home.
- * Es un componente que se usa dentro del Tab Navigator.
- * El headerShown: false en el Tab evita doble header.
- */
 function HomeStackNavigator(): React.JSX.Element {
   return (
     <HomeStack.Navigator
       screenOptions={{
-        // TODO: personalizar el header con colores del tema
-        // headerStyle: { backgroundColor: COLORS.surface },
-        // headerTintColor: COLORS.accent,
-        // headerTitleStyle: { fontWeight: 'bold' },
+        // header con los colores del tema
+        headerStyle: { backgroundColor: COLORS.surface },
+        headerTintColor: COLORS.accent,
+        headerTitleStyle: { fontWeight: 'bold' },
+        contentStyle: { backgroundColor: COLORS.background },
       }}
     >
-      {/* Pantalla inicial del Stack — lista de elementos */}
       <HomeStack.Screen
         name="HomeList"
         component={HomeScreen}
-        // TODO: cambiar el título al nombre de tu dominio
-        // options={{ title: 'Mis Libros' }}
-        // options={{ title: 'Catálogo' }}
-        options={{ title: 'Inicio' }}
+        options={{ title: 'Proyectos' }}
       />
-      {/* Pantalla de detalle — recibe params del Stack */}
       <HomeStack.Screen
         name="HomeDetail"
         component={DetailScreen}
-        // El título se puede leer dinámicamente desde los params
-        // options={({ route }) => ({ title: route.params.name })}
-        // TODO: descomentar la línea de arriba y borrar la de abajo
-        options={{ title: 'Detalle' }}
+        // el título es el nombre del proyecto
+        options={({ route }) => ({ title: route.params.name })}
       />
     </HomeStack.Navigator>
   );
 }
 
-// ============================================
-// TAB NAVIGATOR — raíz de la app
-// ============================================
-
+// Tab raíz
 const Tab = createBottomTabNavigator<RootTabParamList>();
 
 export function RootNavigator(): React.JSX.Element {
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
-        // TODO: implementar la función tabBarIcon para cada pestaña
-        // Deben ser iconos de Ionicons que cambien de color según `focused`
-        // tabBarIcon: ({ focused, color, size }) => {
-        //   let iconName: keyof typeof Ionicons.glyphMap;
-        //   if (route.name === 'Home') {
-        //     iconName = focused ? 'home' : 'home-outline';
-        //   } else {
-        //     iconName = focused ? 'heart' : 'heart-outline';
-        //   }
-        //   return <Ionicons name={iconName} size={size} color={color} />;
-        // },
-        // Color del ícono/texto activo
-        // TODO: descomentar para aplicar el color del tema
-        // tabBarActiveTintColor: COLORS.accent,
-        // tabBarInactiveTintColor: COLORS.textSecondary,
-        // Ocultar el header del Tab porque cada Stack ya tiene el suyo
+        // icono según la pestaña y si está activa
+        tabBarIcon: ({ focused, color, size }) => {
+          let iconName: keyof typeof Ionicons.glyphMap;
+          if (route.name === 'Home') {
+            iconName = focused ? 'briefcase' : 'briefcase-outline';
+          } else {
+            iconName = focused ? 'heart' : 'heart-outline';
+          }
+          return <Ionicons name={iconName} size={size} color={color} />;
+        },
+        tabBarActiveTintColor: COLORS.accent,
+        tabBarInactiveTintColor: COLORS.textSecondary,
+        tabBarStyle: {
+          backgroundColor: COLORS.surface,
+          borderTopColor: COLORS.border,
+        },
+        // el Stack ya trae su propio header
         headerShown: false,
-        // TODO: personalizar el fondo del tab bar
-        // tabBarStyle: { backgroundColor: COLORS.surface },
       })}
     >
-      {/* La pestaña Home usa el Stack interno */}
       <Tab.Screen
         name="Home"
         component={HomeStackNavigator}
-        // TODO: personalizar la etiqueta según tu dominio
-        // options={{ tabBarLabel: 'Catálogo' }}
-        options={{ tabBarLabel: 'Inicio' }}
+        options={{ tabBarLabel: 'Proyectos' }}
       />
-      {/* La pestaña Favorites va directo a la pantalla (sin Stack) */}
       <Tab.Screen
         name="Favorites"
         component={FavoritesScreen}
-        // TODO: personalizar la etiqueta según tu dominio
-        // options={{ tabBarLabel: 'Mis Guardados' }}
-        options={{ tabBarLabel: 'Favoritos' }}
+        options={{
+          tabBarLabel: 'Favoritos',
+          // Favorites no tiene Stack: aquí sí va header
+          headerShown: true,
+          title: 'Proyectos favoritos',
+          headerStyle: { backgroundColor: COLORS.surface },
+          headerTintColor: COLORS.textPrimary,
+        }}
       />
     </Tab.Navigator>
   );
