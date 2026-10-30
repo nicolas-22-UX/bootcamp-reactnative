@@ -1,0 +1,17 @@
+{
+  "expo": {
+    "name": "week04-zustand",
+    "slug": "week04-zustand",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "dark",
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "dev.bootcamp.week04zustand"
+    },
+    "android": {
+      "package": "dev.bootcamp.week04zustand"
+    },
+    "newArchEnabled": true
+  }
+}
