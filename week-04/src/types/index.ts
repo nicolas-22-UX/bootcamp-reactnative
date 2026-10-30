@@ -1,15 +1,12 @@
-// src/types/index.ts
-// Interface principal del dominio.
-// TODO: adaptar a tu dominio asignado.
+//estados posibles de un proyecto: en construccion, em garantia o en pausa
+export type ProjectStatus = 'active' | 'warranty' | 'paused';
 
-export interface Item {
-  id: string;
-  name: string;
-  description: string;
-  // TODO: agregar campos específicos de tu dominio
-  // Biblioteca:   author: string; isbn: string; pages: number;
-  // Farmacia:     price: number; stock: number; dosage: string;
-  // Gimnasio:     duration: number; difficulty: 'basic' | 'intermediate' | 'advanced';
-  // Restaurante:  price: number; category: string; isVegetarian: boolean;
-  // Cine:         director: string; year: number; genre: string;
+//forma de un proyecto de la empresa. Todas las pantallas usan este contrato.
+export interface Project {
+    id: string;
+    name: string;
+    subtitle: string;
+    client: string;
+    status: ProjectStatus;
+    deliveryDate: string; //formato '2026-12-15'
 }

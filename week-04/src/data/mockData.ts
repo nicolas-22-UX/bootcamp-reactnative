@@ -1,57 +1,20 @@
-// src/data/mockData.ts
-// Datos de ejemplo genéricos para el proyecto.
-// El estudiante debe reemplazar estos datos con los de su dominio asignado.
+import { Project } from '../types'
 
-import type { Item } from '../types';
+//datos de ejemplo de la empresa
 
-// ============================================================
-// LISTA DE ÍTEMS
-// ============================================================
-// TODO: reemplaza estos ítems con los de tu dominio asignado.
-//   Biblioteca  → libros con author, year, genre
-//   Farmacia    → medicamentos con price, stock, prescription
-//   Gimnasio    → clases con instructor, schedule, capacity
-//   Restaurante → platillos con price, category, spiceLevel
-//   Cine        → películas con director, duration, genre
-export const ITEMS: Item[] = [
-  {
-    id: '1',
-    name: 'Ítem Uno',
-    description: 'Descripción detallada del primer ítem. Adapta este campo a tu dominio.',
-  },
-  {
-    id: '2',
-    name: 'Ítem Dos',
-    description: 'Descripción detallada del segundo ítem. Adapta este campo a tu dominio.',
-  },
-  {
-    id: '3',
-    name: 'Ítem Tres',
-    description: 'Descripción detallada del tercer ítem. Adapta este campo a tu dominio.',
-  },
-  {
-    id: '4',
-    name: 'Ítem Cuatro',
-    description: 'Descripción detallada del cuarto ítem. Adapta este campo a tu dominio.',
-  },
-  {
-    id: '5',
-    name: 'Ítem Cinco',
-    description: 'Descripción detallada del quinto ítem. Adapta este campo a tu dominio.',
-  },
-  {
-    id: '6',
-    name: 'Ítem Seis',
-    description: 'Descripción detallada del sexto ítem. Adapta este campo a tu dominio.',
-  },
-  {
-    id: '7',
-    name: 'Ítem Siete',
-    description: 'Descripción detallada del séptimo ítem. Adapta este campo a tu dominio.',
-  },
-  {
-    id: '8',
-    name: 'Ítem Ocho',
-    description: 'Descripción detallada del octavo ítem. Adapta este campo a tu dominio.',
-  },
+export const PROJECTS: Project[] = [
+  { id: '1', name: 'Plataforma de Pagos', subtitle: 'Pasarela web y móvil', client: 'Banco Andino', status: 'active', deliveryDate: '2026-12-15' },
+  { id: '2', name: 'Portal de Citas Médicas', subtitle: 'Agenda en línea', client: 'Clínica del Valle', status: 'active', deliveryDate: '2026-11-30' },
+  { id: '3', name: 'Tienda en Línea', subtitle: 'Catálogo y carrito', client: 'Moda Urbana', status: 'warranty', deliveryDate: '2026-09-10' },
+  { id: '4', name: 'Control de Flotas', subtitle: 'Rastreo de vehículos', client: 'Transportes Sol', status: 'paused', deliveryDate: '2027-01-20' },
+  { id: '5', name: 'App de Domicilios', subtitle: 'Pedidos y seguimiento', client: 'Sabor Express', status: 'active', deliveryDate: '2026-12-05' },
+  { id: '6', name: 'Sistema de Inventario', subtitle: 'Bodega y reportes', client: 'Ferretería Central', status: 'warranty', deliveryDate: '2026-08-22' },
+  { id: '7', name: 'Plataforma Educativa', subtitle: 'Cursos y evaluaciones', client: 'Colegio Nuevo Sol', status: 'active', deliveryDate: '2027-02-14' },
+  { id: '8', name: 'CRM de Ventas', subtitle: 'Clientes y oportunidades', client: 'Inmobiliaria Horizonte', status: 'paused', deliveryDate: '2027-03-01' },
+  { id: '9', name: 'App de Reservas', subtitle: 'Mesas y turnos', client: 'Hotel Mirador', status: 'active', deliveryDate: '2026-11-18' },
+  { id: '10', name: 'Panel de Facturación', subtitle: 'Facturas electrónicas', client: 'Contadores Asociados', status: 'warranty', deliveryDate: '2026-10-05' },
+  { id: '11', name: 'Portal de Empleo', subtitle: 'Vacantes y hojas de vida', client: 'Talento Colombia', status: 'active', deliveryDate: '2027-01-08' },
+  { id: '12', name: 'Monitor de Sensores', subtitle: 'Datos en tiempo real', client: 'AgroTech Sur', status: 'paused', deliveryDate: '2027-04-12' },
 ];
+// favoritos para la pestaña Favorites (3 proyectos)
+export const FAVORITES: Project[] = [PROJECTS[0], PROJECTS[2], PROJECTS[4]];
