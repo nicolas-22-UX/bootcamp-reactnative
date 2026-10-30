@@ -1,169 +1,109 @@
-// src/screens/DetailScreen.tsx
-// Pantalla de detalle: muestra la información completa de un ítem
-// y permite guardarlo / quitarlo usando el store de Zustand.
-// Esta pantalla demuestra cómo acceder al store desde cualquier screen.
-
+// Detalle de un proyecto: permite guardarlo o quitarlo del store global
 import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useRoute, type RouteProp } from '@react-navigation/native';
 
-import { COLORS, RADIUS, SPACING, TYPOGRAPHY } from '../theme';
+import { PROJECTS } from '../data/mockData';
 import type { HomeStackParamList } from '../navigation/types';
-
-// TODO: importar el store y el tipo Item
-// import { useSavedStore } from '../stores/savedStore';
-// import type { Item } from '../types';
-// import { ITEMS } from '../data/mockData';
+import { useSavedStore } from '../stores/savedStore';
+import { COLORS, RADIUS, SPACING, TYPOGRAPHY } from '../theme';
 
 type DetailRouteProp = RouteProp<HomeStackParamList, 'HomeDetail'>;
 
-// ============================================================
-// PANTALLA: DetailScreen
-// ============================================================
-
 export function DetailScreen(): React.JSX.Element {
   const route = useRoute<DetailRouteProp>();
-  const { id, name } = route.params;
+  const { id } = route.params;
 
-  // TODO: buscar el ítem completo en ITEMS usando el id de params
-  // const item: Item | undefined = ITEMS.find((i) => i.id === id);
+  // Busca el proyecto completo con el id que llegó por params
+  const project = PROJECTS.find((p) => p.id === id);
 
-  // ──────────────────────────────────────────────────────────
-  // TODO: obtener los selectores del savedStore
-  // ──────────────────────────────────────────────────────────
-  // Usar selectores individuales para evitar re-renders innecesarios:
-  //
-  // const isItemSaved = useSavedStore((state) => state.isItemSaved);
-  // const addItem    = useSavedStore((state) => state.addItem);
-  // const removeItem = useSavedStore((state) => state.removeItem);
-  //
-  // Luego calcular si el ítem actual está guardado:
-  // const isSaved = isItemSaved(id);
+  // Selectores: cada uno lee solo lo que necesita del store
+  const isSaved = useSavedStore((state) =>
+    state.items.some((i) => i.id === id),
+  );
+  const addItem = useSavedStore((state) => state.addItem);
+  const removeItem = useSavedStore((state) => state.removeItem);
 
-  // Placeholder hasta que el store esté implementado
-  const isSaved = false;
+  // Si el id no existe en los datos, avisa en vez de fallar
+  if (!project) {
+    return (
+      <View style={styles.container}>
+        <Text style={styles.field}>Proyecto no encontrado</Text>
+      </View>
+    );
+  }
 
-  // TODO: implementar handleToggleSave
-  // Si el ítem está guardado → removeItem(id)
-  // Si no está guardado → addItem(item)  [necesitas el objeto Item completo]
+  // Si ya está guardado lo quita; si no, lo guarda
   const handleToggleSave = (): void => {
-    // TODO: implementar
-    // if (isSaved) {
-    //   removeItem(id);
-    // } else if (item) {
-    //   addItem(item);
-    // }
+    if (isSaved) {
+      removeItem(project.id);
+    } else {
+      addItem(project);
+    }
   };
 
   return (
     <View style={styles.container}>
-      {/* Icono / thumbnail del ítem */}
-      <View style={styles.hero}>
-        <Text style={styles.heroLetter}>{name.charAt(0)}</Text>
-      </View>
+      <Text style={styles.title}>{project.name}</Text>
+      <Text style={styles.field}>{project.subtitle}</Text>
+      <Text style={styles.field}>Cliente: {project.client}</Text>
+      <Text style={styles.field}>Estado: {project.status}</Text>
+      <Text style={styles.field}>Entrega: {project.deliveryDate}</Text>
 
-      {/* Información principal */}
-      <View style={styles.info}>
-        <Text style={styles.title}>{name}</Text>
-        <Text style={styles.id}>ID: {id}</Text>
-
-        {/* TODO: mostrar la descripción del ítem (item.description) */}
-        {/* TODO: mostrar campos específicos de tu dominio */}
-        <Text style={styles.description}>
-          Adapta esta pantalla a tu dominio: muestra los detalles
-          relevantes de tu ítem aquí.
-        </Text>
-      </View>
-
-      {/* ──────────────────────────────────────────────────── */}
-      {/* BOTÓN GUARDAR / QUITAR — conectado al store Zustand  */}
-      {/* ──────────────────────────────────────────────────── */}
-      {/* Este botón demuestra el estado compartido entre pantallas:
-          al guardar aquí, el badge del Tab "Guardados" se actualiza
-          automáticamente sin necesidad de pasar props ni callbacks. */}
       <Pressable
-        style={({ pressed }) => [
-          styles.saveButton,
-          isSaved && styles.saveButtonActive,
-          pressed && styles.saveButtonPressed,
-        ]}
         onPress={handleToggleSave}
-        testID="save-button"
+        style={({ pressed }) => [
+          styles.button,
+          isSaved && styles.buttonSaved,
+          pressed && styles.buttonPressed,
+        ]}
       >
-        <Text style={[styles.saveButtonText, isSaved && styles.saveButtonTextActive]}>
-          {isSaved ? '★  Guardado' : '☆  Guardar'}
+        <Text style={[styles.buttonText, isSaved && styles.buttonTextSaved]}>
+          {isSaved ? 'Quitar de guardados' : 'Guardar proyecto'}
         </Text>
       </Pressable>
     </View>
   );
 }
 
-// ============================================================
-// ESTILOS
-// ============================================================
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: COLORS.background,
-    padding: SPACING.lg,
-    gap: SPACING.lg,
-  },
-  hero: {
-    width: 96,
-    height: 96,
-    borderRadius: RADIUS.lg,
-    backgroundColor: COLORS.card,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    alignItems: 'center',
-    justifyContent: 'center',
-    alignSelf: 'center',
-  },
-  heroLetter: {
-    fontSize: 40,
-    fontWeight: '700',
-    color: COLORS.accent,
-  },
-  info: {
-    gap: SPACING.sm,
+    padding: SPACING.base,
   },
   title: {
-    ...TYPOGRAPHY.h2,
+    fontSize: TYPOGRAPHY.size.xl,
+    fontWeight: TYPOGRAPHY.weight.bold,
+    color: COLORS.textPrimary,
+    marginBottom: SPACING.sm,
   },
-  id: {
-    ...TYPOGRAPHY.label,
-    textTransform: 'uppercase',
-    letterSpacing: 1,
-  },
-  description: {
-    ...TYPOGRAPHY.body,
+  field: {
+    fontSize: TYPOGRAPHY.size.base,
     color: COLORS.textSecondary,
-    lineHeight: 24,
-    marginTop: SPACING.sm,
+    marginBottom: SPACING.xs,
   },
-  saveButton: {
-    backgroundColor: COLORS.card,
+  button: {
+    marginTop: SPACING.lg,
+    padding: SPACING.md,
     borderRadius: RADIUS.md,
+    alignItems: 'center',
+    backgroundColor: COLORS.accent,
+  },
+  buttonSaved: {
+    backgroundColor: COLORS.surfaceAlt,
     borderWidth: 1,
     borderColor: COLORS.border,
-    paddingVertical: SPACING.md,
-    alignItems: 'center',
-    marginTop: 'auto',
   },
-  saveButtonActive: {
-    backgroundColor: COLORS.accent,
-    borderColor: COLORS.accent,
-  },
-  saveButtonPressed: {
+  buttonPressed: {
     opacity: 0.7,
   },
-  saveButtonText: {
-    ...TYPOGRAPHY.body,
-    fontWeight: '600',
-    color: COLORS.textPrimary,
-  },
-  saveButtonTextActive: {
+  buttonText: {
+    fontSize: TYPOGRAPHY.size.md,
+    fontWeight: TYPOGRAPHY.weight.semibold,
     color: COLORS.background,
+  },
+  buttonTextSaved: {
+    color: COLORS.textPrimary,
   },
 });

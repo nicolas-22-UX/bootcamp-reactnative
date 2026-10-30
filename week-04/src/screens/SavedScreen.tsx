@@ -1,117 +1,58 @@
-// src/screens/SavedScreen.tsx
-// Pantalla de guardados: muestra todos los ítems que el usuario guardó.
-// Lee el estado directamente desde el savedStore (sin props).
-// Demuestra que el mismo store Zustand mantiene consistencia entre tabs.
-
+// Lista de proyectos guardados: lee el store global
 import React from 'react';
-import {
-  FlatList,
-  Pressable,
-  StyleSheet,
-  Text,
-  View,
-  type ListRenderItem,
-} from 'react-native';
+import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
 
+import { useSavedStore } from '../stores/savedStore';
 import { COLORS, RADIUS, SPACING, TYPOGRAPHY } from '../theme';
-import type { Item } from '../types';
-
-// TODO: importar el store
-// import { useSavedStore } from '../stores/savedStore';
-
-// ============================================================
-// SUB-COMPONENTE: SavedItem
-// ============================================================
-
-interface SavedItemProps {
-  item: Item;
-  onRemove: () => void;
-}
-
-function SavedItem({ item, onRemove }: SavedItemProps): React.JSX.Element {
-  return (
-    <View style={styles.card}>
-      <View style={styles.thumbnail}>
-        <Text style={styles.thumbnailText}>{item.name.charAt(0)}</Text>
-      </View>
-
-      <View style={styles.cardContent}>
-        <Text style={styles.cardTitle} numberOfLines={1}>
-          {item.name}
-        </Text>
-        <Text style={styles.cardDescription} numberOfLines={1}>
-          {item.description}
-        </Text>
-      </View>
-
-      <Pressable
-        style={({ pressed }) => [styles.removeButton, pressed && { opacity: 0.6 }]}
-        onPress={onRemove}
-        accessibilityLabel={`Quitar ${item.name} de guardados`}
-      >
-        <Text style={styles.removeButtonText}>✕</Text>
-      </Pressable>
-    </View>
-  );
-}
-
-// ============================================================
-// PANTALLA: SavedScreen
-// ============================================================
 
 export function SavedScreen(): React.JSX.Element {
-  // TODO: conectar con el savedStore
-  // const items     = useSavedStore((state) => state.items);
-  // const removeItem = useSavedStore((state) => state.removeItem);
-  // const clearAll  = useSavedStore((state) => state.clearAll);
-
-  // Placeholder hasta que el store esté implementado
-  const items: Item[] = [];
-  const removeItem = (_id: string): void => {};
-  const clearAll = (): void => {};
-
-  const renderItem: ListRenderItem<Item> = ({ item }) => (
-    <SavedItem item={item} onRemove={() => removeItem(item.id)} />
-  );
+  // Selectores: cada uno lee solo lo que necesita
+  const items = useSavedStore((state) => state.items);
+  const removeItem = useSavedStore((state) => state.removeItem);
+  const clearAll = useSavedStore((state) => state.clearAll);
 
   return (
     <View style={styles.container}>
+      {items.length > 0 && (
+        <Pressable
+          onPress={clearAll}
+          style={({ pressed }) => [
+            styles.clearButton,
+            pressed && styles.pressed,
+          ]}
+        >
+          <Text style={styles.clearText}>Limpiar todo</Text>
+        </Pressable>
+      )}
+
       <FlatList
         data={items}
         keyExtractor={(item) => item.id}
-        renderItem={renderItem}
         contentContainerStyle={styles.list}
-        ItemSeparatorComponent={() => <View style={styles.separator} />}
-        ListHeaderComponent={
-          items.length > 0 ? (
-            <View style={styles.header}>
-              <Text style={styles.sectionLabel}>
-                {items.length} guardado{items.length !== 1 ? 's' : ''}
-              </Text>
-              {/* TODO: [EXTRA] botón "Limpiar todo" usando clearAll del store */}
-              <Pressable onPress={clearAll} style={styles.clearButton}>
-                <Text style={styles.clearButtonText}>Limpiar todo</Text>
-              </Pressable>
-            </View>
-          ) : null
-        }
         ListEmptyComponent={
-          <View style={styles.emptyContainer}>
-            <Text style={styles.emptyIcon}>☆</Text>
-            <Text style={styles.emptyTitle}>Sin guardados aún</Text>
-            <Text style={styles.emptySubtitle}>
-              Ve a la lista principal y guarda tus ítems favoritos.
-            </Text>
-          </View>
+          <Text style={styles.empty}>No tienes proyectos guardados</Text>
         }
+        renderItem={({ item }) => (
+          <View style={styles.row}>
+            <View style={styles.info}>
+              <Text style={styles.name}>{item.name}</Text>
+              <Text style={styles.client}>{item.client}</Text>
+            </View>
+            <Pressable
+              onPress={() => removeItem(item.id)}
+              style={({ pressed }) => [
+                styles.removeButton,
+                pressed && styles.pressed,
+              ]}
+            >
+              <Text style={styles.removeText}>Quitar</Text>
+            </Pressable>
+          </View>
+        )}
       />
     </View>
   );
 }
-
-// ============================================================
-// ESTILOS
-// ============================================================
 
 const styles = StyleSheet.create({
   container: {
@@ -119,95 +60,62 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.background,
   },
   list: {
-    padding: SPACING.md,
-    paddingBottom: SPACING.xl,
-    flexGrow: 1,
-  },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: SPACING.sm,
-  },
-  sectionLabel: {
-    ...TYPOGRAPHY.label,
-    textTransform: 'uppercase',
-    letterSpacing: 1,
+    padding: SPACING.base,
   },
   clearButton: {
-    padding: SPACING.xs,
-  },
-  clearButtonText: {
-    ...TYPOGRAPHY.caption,
-    color: COLORS.error,
-  },
-  separator: {
-    height: SPACING.sm,
-  },
-  card: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: COLORS.card,
+    margin: SPACING.base,
+    marginBottom: 0,
+    padding: SPACING.sm,
     borderRadius: RADIUS.md,
-    padding: SPACING.md,
+    alignItems: 'center',
+    backgroundColor: COLORS.surfaceAlt,
     borderWidth: 1,
     borderColor: COLORS.border,
-    gap: SPACING.md,
   },
-  thumbnail: {
-    width: 44,
-    height: 44,
-    borderRadius: RADIUS.sm,
-    backgroundColor: COLORS.surface,
+  clearText: {
+    fontSize: TYPOGRAPHY.size.base,
+    fontWeight: TYPOGRAPHY.weight.semibold,
+    color: COLORS.textPrimary,
+  },
+  empty: {
+    fontSize: TYPOGRAPHY.size.base,
+    color: COLORS.textSecondary,
+    textAlign: 'center',
+    marginTop: SPACING.lg,
+  },
+  row: {
+    flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
+    backgroundColor: COLORS.surface,
+    borderRadius: RADIUS.md,
+    padding: SPACING.md,
+    marginBottom: SPACING.sm,
   },
-  thumbnailText: {
-    ...TYPOGRAPHY.h3,
-    color: COLORS.accent,
-  },
-  cardContent: {
+  info: {
     flex: 1,
-    gap: SPACING.xs,
   },
-  cardTitle: {
-    ...TYPOGRAPHY.body,
-    fontWeight: '600',
+  name: {
+    fontSize: TYPOGRAPHY.size.md,
+    fontWeight: TYPOGRAPHY.weight.semibold,
+    color: COLORS.textPrimary,
   },
-  cardDescription: {
-    ...TYPOGRAPHY.caption,
+  client: {
+    fontSize: TYPOGRAPHY.size.sm,
+    color: COLORS.textSecondary,
+    marginTop: SPACING.xs,
   },
   removeButton: {
-    width: 32,
-    height: 32,
-    borderRadius: RADIUS.full,
-    backgroundColor: COLORS.surface,
-    alignItems: 'center',
-    justifyContent: 'center',
+    paddingVertical: SPACING.xs,
+    paddingHorizontal: SPACING.md,
+    borderRadius: RADIUS.md,
+    borderWidth: 1,
+    borderColor: COLORS.border,
   },
-  removeButtonText: {
-    ...TYPOGRAPHY.caption,
-    color: COLORS.error,
-    fontWeight: '600',
+  removeText: {
+    fontSize: TYPOGRAPHY.size.sm,
+    color: COLORS.textPrimary,
   },
-  emptyContainer: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: SPACING.xxl,
-    gap: SPACING.md,
-  },
-  emptyIcon: {
-    fontSize: 52,
-  },
-  emptyTitle: {
-    ...TYPOGRAPHY.h3,
-    color: COLORS.textSecondary,
-  },
-  emptySubtitle: {
-    ...TYPOGRAPHY.body,
-    color: COLORS.textMuted,
-    textAlign: 'center',
-    paddingHorizontal: SPACING.lg,
+  pressed: {
+    opacity: 0.7,
   },
 });
