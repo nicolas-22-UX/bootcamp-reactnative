@@ -1,95 +1,89 @@
-// src/hooks/useItems.ts
-// Custom hooks que encapsulan la lógica de fetching del dominio.
-// Los componentes consumen estos hooks, no llaman a apiClient directamente.
+//hooks que encapsula el fetching de proyectos. 
+// los componentes usan estos hooks, no llaman a apiClient directamente.
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '../services/api';
-import type { CreateItemPayload, Item } from '../types';
+import { CreateProjectPayload, Project, ProjectStatus } from '../types';
 
-// ============================================================
-// QUERY KEY
-// ============================================================
-// Centralizar la queryKey evita errores de typo al invalidar.
-// TODO: renombra según tu dominio: 'books', 'products', 'dishes', etc.
-export const ITEMS_QUERY_KEY = ['items'] as const;
+//QUERY KEY
+// una sola llave para todos: evita typos al invalidar 
+export const ITEMS_QUERY_KEY = ['projects'] as const;
 
-// ============================================================
-// useItems — obtener lista de ítems
-// ============================================================
-// TODO: implementar la queryFn que llama a tu endpoint real.
-//
-// Ejemplo con JSONPlaceholder (proxy mientras tienes API real):
-//   const { data } = await apiClient.get<Item[]>('/posts?_limit=20');
-//
-// Ejemplo con tu API propia:
-//   const { data } = await apiClient.get<Item[]>('/items');
+//ADAPTADOR: post de JSONplaceholder -> PROJECT
 
+//JSONplaceholder devuelve posts (id, title, body, userId).
+//los convertimos a la forma de nuestro dominio 
+
+interface PostDTO {
+  id: number;
+  title: string;
+  body: string;
+  userId: number;
+}
+
+const STATUSES: ProjectStatus[] = ['active', 'warranty', 'paused'];
+
+function toProject(post: PostDTO): Project {
+  return {
+    id: post.id,
+    name: post.title,
+    subtitle: post.body,
+    client: `Client ${post.userId}`,
+    status: STATUSES[post.id % 3],
+    deliveryDate: new Date().toISOString(),
+  };
+}
+
+//useItems: obtener la lista de proyectos
 export function useItems() {
-  return useQuery<Item[]>({
+  return useQuery<Project[], Error>({
     queryKey: ITEMS_QUERY_KEY,
     queryFn: async () => {
-      // TODO: reemplaza '/posts' por el endpoint de tu dominio
-      // La respuesta debe ser un array de objetos que mapees a tu interfaz Item
-      const { data } = await apiClient.get<Item[]>('/posts?_limit=15');
-      return data;
+      const { data } = await apiClient.get<PostDTO[]>('/posts?_limit=15');
+      return data.map(toProject);
     },
   });
 }
 
-// ============================================================
-// useItemById — obtener un ítem individual por ID
-// ============================================================
-// Usado en DetailScreen para obtener los detalles completos.
-
+//useItemByID: obtener un proyecto por id
 export function useItemById(id: string | number) {
-  return useQuery<Item>({
+  return useQuery<Project>({
     queryKey: [...ITEMS_QUERY_KEY, id],
     queryFn: async () => {
-      // TODO: [EXTRA] reemplaza '/posts' por el endpoint de tu dominio
-      const { data } = await apiClient.get<Item>(`/posts/${id}`);
-      return data;
+      const { data } = await apiClient.get<PostDTO>(`/posts/${id}`);
+      return toProject(data);
     },
-    // La query solo corre si hay un id válido
+    //solo corre si hay un id valido
     enabled: !!id,
   });
 }
 
-// ============================================================
-// useCreateItem — crear un nuevo ítem
-// ============================================================
-// TODO: implementar la mutationFn que hace el POST a tu API.
-
 export function useCreateItem() {
   const queryClient = useQueryClient();
 
-  return useMutation<Item, Error, CreateItemPayload>({
+  return useMutation<Project, Error, CreateProjectPayload>({
     mutationFn: async (payload) => {
-      // TODO: reemplaza '/posts' por el endpoint de tu dominio
-      const { data } = await apiClient.post<Item>('/posts', payload);
-      return data;
+      // El servidor solo nos devuelve el id nuevo
+      const { data } = await apiClient.post<{ id: number }>('/posts', payload);
+      // Armamos el Project completo: datos enviados + id del servidor
+      return { ...payload, id: data.id };
     },
     onSuccess: () => {
-      // Invalida el caché → TanStack Query refetch la lista automáticamente
+      // Invalida el cache: TanStack Query vuelve a pedir la lista
       queryClient.invalidateQueries({ queryKey: ITEMS_QUERY_KEY });
     },
     onError: (error) => {
-      // TODO: [EXTRA] mostrar un toast o alerta al usuario con el mensaje de error
-      console.error('Failed to create item:', error.message);
+      console.error('Failed to create project:', error.message);
     },
   });
 }
 
-// ============================================================
-// useDeleteItem — eliminar un ítem por ID
-// ============================================================
-// TODO: [EXTRA] implementar si tu dominio lo requiere.
-
+// useDeleteItem: eliminar un proyecto (extra)
 export function useDeleteItem() {
   const queryClient = useQueryClient();
 
-  return useMutation<void, Error, string | number>({
+  return useMutation<void, Error, string | number>({  
     mutationFn: async (id) => {
-      // TODO: [EXTRA] reemplaza '/posts' por el endpoint de tu dominio
       await apiClient.delete(`/posts/${id}`);
     },
     onSuccess: () => {
@@ -97,3 +91,4 @@ export function useDeleteItem() {
     },
   });
 }
+
