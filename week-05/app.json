@@ -1,0 +1,18 @@
+{
+  "expo": {
+    "name": "Week 05 — TanStack Query",
+    "slug": "week05-tanstack-query",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "dark",
+    "newArchEnabled": true,
+    "ios": {
+      "supportsTablet": false
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#0d1117"
+      }
+    }
+  }
+}
