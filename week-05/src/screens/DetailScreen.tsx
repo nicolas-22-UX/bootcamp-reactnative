@@ -1,18 +1,41 @@
 // src/screens/DetailScreen.tsx
-// Pantalla de detalle: muestra los campos completos de un ítem.
-// TODO: [EXTRA] conectar con useItemById() para obtener datos frescos del servidor.
+// Pantalla de detalle: pide un proyecto al servidor con useItemById.
 
 import React from 'react';
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useRoute, type RouteProp } from '@react-navigation/native';
 
 import { COLORS, RADIUS, SPACING, TYPOGRAPHY } from '../theme';
+import type { ProjectStatus } from '../types';
 import type { RootStackParamList } from '../navigation/types';
-
-// TODO: [EXTRA] importar el hook de detalle
-// import { useItemById } from '../hooks/useItems';
+import { useItemById } from '../hooks/useItems';
 
 type DetailRouteProp = RouteProp<RootStackParamList, 'Detail'>;
+
+// Texto de cada estado
+const STATUS_LABEL: Record<ProjectStatus, string> = {
+  active: 'Activo',
+  warranty: 'Garantía',
+  paused: 'Pausado',
+};
+
+// ============================================================
+// SUB-COMPONENTE: FieldRow (una fila "etiqueta: valor")
+// ============================================================
+
+interface FieldRowProps {
+  label: string;
+  value: string;
+}
+
+function FieldRow({ label, value }: FieldRowProps): React.JSX.Element {
+  return (
+    <View style={styles.fieldRow}>
+      <Text style={styles.fieldLabel}>{label}</Text>
+      <Text style={styles.fieldValue}>{value}</Text>
+    </View>
+  );
+}
 
 // ============================================================
 // PANTALLA: DetailScreen
@@ -22,15 +45,10 @@ export function DetailScreen(): React.JSX.Element {
   const route = useRoute<DetailRouteProp>();
   const { id, name } = route.params;
 
-  // TODO: [EXTRA] obtener los datos completos del ítem desde la API
-  // ──────────────────────────────────────────────────────
-  // const { data: item, isLoading, isError, refetch } = useItemById(id);
-  //
-  // Placeholders:
-  const isLoading = false;
-  const isError = false;
-  const item = null;
+  // Pide el proyecto al servidor por su id
+  const { data: item, isLoading, isError, refetch } = useItemById(id);
 
+  // Estado 1: cargando
   if (isLoading) {
     return (
       <View style={styles.centered}>
@@ -39,18 +57,20 @@ export function DetailScreen(): React.JSX.Element {
     );
   }
 
+  // Estado 2: error, con botón de reintentar
   if (isError) {
     return (
       <View style={styles.centered}>
         <Text style={styles.errorText}>No se pudo cargar el detalle</Text>
-        {/* TODO: [EXTRA] agregar botón reintentar con refetch */}
+        <Pressable style={styles.button} onPress={() => refetch()}>
+          <Text style={styles.buttonText}>Reintentar</Text>
+        </Pressable>
       </View>
     );
   }
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      {/* Header del ítem */}
       <View style={styles.hero}>
         <View style={styles.heroIcon}>
           <Text style={styles.heroLetter}>{name.charAt(0)}</Text>
@@ -59,20 +79,12 @@ export function DetailScreen(): React.JSX.Element {
         <Text style={styles.idBadge}>ID: {id}</Text>
       </View>
 
-      {/* TODO: [EXTRA] mostrar los campos del ítem cuando item !== null */}
-      {!item ? (
-        <View style={styles.infoBox}>
-          <Text style={styles.infoText}>
-            Implementa useItemById() en src/hooks/useItems.ts para ver los
-            detalles completos del ítem aquí.
-          </Text>
-        </View>
-      ) : (
+      {item && (
         <View style={styles.fieldsCard}>
-          {/* TODO: [EXTRA] renderizar los campos de tu dominio */}
-          {/* Ejemplo: */}
-          {/* <FieldRow label="Descripción" value={item.description} /> */}
-          {/* <FieldRow label="Precio" value={`${item.price} €`} /> */}
+          <FieldRow label="Descripción" value={item.subtitle} />
+          <FieldRow label="Cliente" value={item.client} />
+          <FieldRow label="Estado" value={STATUS_LABEL[item.status]} />
+          <FieldRow label="Entrega" value={item.deliveryDate} />
         </View>
       )}
     </ScrollView>
@@ -107,21 +119,23 @@ const styles = StyleSheet.create({
   heroLetter: { fontSize: 36, fontWeight: '700', color: COLORS.accent },
   title: { ...TYPOGRAPHY.h2, textAlign: 'center' },
   idBadge: { ...TYPOGRAPHY.label, textTransform: 'uppercase', letterSpacing: 1 },
-  infoBox: {
-    backgroundColor: COLORS.card,
-    borderRadius: RADIUS.md,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    padding: SPACING.md,
-  },
-  infoText: { ...TYPOGRAPHY.caption, textAlign: 'center', color: COLORS.textMuted },
   fieldsCard: {
     backgroundColor: COLORS.card,
     borderRadius: RADIUS.md,
     borderWidth: 1,
     borderColor: COLORS.border,
     padding: SPACING.md,
-    gap: SPACING.sm,
+    gap: SPACING.md,
   },
+  fieldRow: { gap: SPACING.xs },
+  fieldLabel: { ...TYPOGRAPHY.label, textTransform: 'uppercase', letterSpacing: 0.8 },
+  fieldValue: { ...TYPOGRAPHY.body },
   errorText: { ...TYPOGRAPHY.h3, color: COLORS.error },
+  button: {
+    backgroundColor: COLORS.accent,
+    borderRadius: RADIUS.md,
+    padding: SPACING.md,
+    alignItems: 'center',
+  },
+  buttonText: { ...TYPOGRAPHY.body, fontWeight: '700', color: COLORS.background },
 });

@@ -1,6 +1,5 @@
 // src/screens/CreateScreen.tsx
-// Pantalla modal para crear un nuevo ítem.
-// El aprendiz debe conectar useMutation y manejar el retorno al listado.
+// Pantalla para crear un proyecto nuevo (POST con useMutation).
 
 import React, { useState } from 'react';
 import {
@@ -18,47 +17,54 @@ import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 import { COLORS, RADIUS, SPACING, TYPOGRAPHY } from '../theme';
+import type { ProjectStatus } from '../types';
 import type { RootStackParamList } from '../navigation/types';
-
-// TODO: importar el hook de creación
-// import { useCreateItem } from '../hooks/useItems';
+import { useCreateItem } from '../hooks/useItems';
 
 type CreateNavProp = NativeStackNavigationProp<RootStackParamList, 'Create'>;
 
-// ============================================================
+// Opciones del selector de estado
+const STATUS_OPTIONS: { value: ProjectStatus; label: string }[] = [
+  { value: 'active', label: 'Activo' },
+  { value: 'warranty', label: 'Garantía' },
+  { value: 'paused', label: 'Pausado' },
+];
+
 // PANTALLA: CreateScreen
-// ============================================================
+
 
 export function CreateScreen(): React.JSX.Element {
   const navigation = useNavigation<CreateNavProp>();
 
-  // Campos del formulario — adapta al dominio asignado
-  const [title, setTitle] = useState('');
-  const [body, setBody] = useState('');
+  // Un estado por cada campo del formulario
+  const [name, setName] = useState('');
+  const [subtitle, setSubtitle] = useState('');
+  const [client, setClient] = useState('');
+  const [status, setStatus] = useState<ProjectStatus>('active');
+  const [deliveryDate, setDeliveryDate] = useState('2026-12-01');
 
-  // TODO: conectar useMutation para crear el ítem
-  // ─────────────────────────────────────────────
-  // const { mutate: createItem, isPending } = useCreateItem();
-  //
-  // Placeholder en tanto se completa el TODO:
-  const isPending = false;
+  // La mutación: mutate envía el POST, isPending dice si va en camino
+  const { mutate: createItem, isPending, isError, error } = useCreateItem();
 
   function handleSubmit(): void {
-    if (!title.trim()) return;
+    if (!name.trim()) return;
 
-    // TODO: llamar mutate con los datos del formulario
-    // ─────────────────────────────────────────────────
-    // createItem(
-    //   { title, body },
-    //   {
-    //     // onSuccess se ejecuta TRAS invalidateQueries del hook
-    //     onSuccess: () => navigation.goBack(),
-    //   },
-    // );
-    console.log('TODO: implementar createItem({ title, body })');
+    createItem(
+      {
+        name: name.trim(),
+        subtitle: subtitle.trim(),
+        client: client.trim(),
+        status,
+        deliveryDate: deliveryDate.trim(),
+      },
+      {
+        // Se ejecuta cuando el POST salió bien: volvemos a la lista
+        onSuccess: () => navigation.goBack(),
+      },
+    );
   }
 
-  const canSubmit = title.trim().length > 0 && !isPending;
+  const canSubmit = name.trim().length > 0 && !isPending;
 
   return (
     <KeyboardAvoidingView
@@ -70,47 +76,83 @@ export function CreateScreen(): React.JSX.Element {
         contentContainerStyle={styles.content}
         keyboardShouldPersistTaps="handled"
       >
-        <Text style={styles.sectionLabel}>Datos del nuevo ítem</Text>
+        <Text style={styles.sectionLabel}>Datos del nuevo proyecto</Text>
 
-        {/* Campo nombre / título */}
         <View style={styles.field}>
           <Text style={styles.fieldLabel}>
-            Nombre{' '}
-            <Text style={styles.required}>*</Text>
+            Nombre <Text style={styles.required}>*</Text>
           </Text>
           <TextInput
             style={styles.input}
-            value={title}
-            onChangeText={setTitle}
-            placeholder="Nombre del ítem…"
+            value={name}
+            onChangeText={setName}
+            placeholder="Nombre del proyecto…"
             placeholderTextColor={COLORS.textMuted}
             returnKeyType="next"
           />
         </View>
 
-        {/* TODO: [EXTRA] agregar campos adicionales para tu dominio */}
-        {/* Por ejemplo:                                     */}
-        {/* <View style={styles.field}>                       */}
-        {/*   <Text style={styles.fieldLabel}>Precio</Text>  */}
-        {/*   <TextInput … />                                 */}
-        {/* </View>                                           */}
-
-        {/* Campo descripción / cuerpo (genérico) */}
         <View style={styles.field}>
-          <Text style={styles.fieldLabel}>Descripción</Text>
+          <Text style={styles.fieldLabel}>Descripción corta</Text>
           <TextInput
             style={[styles.input, styles.multiline]}
-            value={body}
-            onChangeText={setBody}
-            placeholder="Descripción opcional…"
+            value={subtitle}
+            onChangeText={setSubtitle}
+            placeholder="De qué trata el proyecto…"
             placeholderTextColor={COLORS.textMuted}
             multiline
-            numberOfLines={4}
+            numberOfLines={3}
             textAlignVertical="top"
           />
         </View>
 
-        {/* Botón de envío */}
+        <View style={styles.field}>
+          <Text style={styles.fieldLabel}>Cliente</Text>
+          <TextInput
+            style={styles.input}
+            value={client}
+            onChangeText={setClient}
+            placeholder="Nombre del cliente…"
+            placeholderTextColor={COLORS.textMuted}
+          />
+        </View>
+
+        <View style={styles.field}>
+          <Text style={styles.fieldLabel}>Estado</Text>
+          <View style={styles.row}>
+            {STATUS_OPTIONS.map((option) => (
+              <Pressable
+                key={option.value}
+                style={[styles.chip, status === option.value && styles.chipActive]}
+                onPress={() => setStatus(option.value)}
+              >
+                <Text
+                  style={[
+                    styles.chipText,
+                    status === option.value && styles.chipTextActive,
+                  ]}
+                >
+                  {option.label}
+                </Text>
+              </Pressable>
+            ))}
+          </View>
+        </View>
+
+        <View style={styles.field}>
+          <Text style={styles.fieldLabel}>Fecha de entrega (AAAA-MM-DD)</Text>
+          <TextInput
+            style={styles.input}
+            value={deliveryDate}
+            onChangeText={setDeliveryDate}
+            placeholder="2026-12-01"
+            placeholderTextColor={COLORS.textMuted}
+          />
+        </View>
+
+        {/* Si el POST falla, se muestra el mensaje */}
+        {isError && <Text style={styles.errorText}>Error: {error.message}</Text>}
+
         <Pressable
           style={[styles.button, !canSubmit && styles.buttonDisabled]}
           onPress={handleSubmit}
@@ -119,11 +161,10 @@ export function CreateScreen(): React.JSX.Element {
           {isPending ? (
             <ActivityIndicator size="small" color={COLORS.background} />
           ) : (
-            <Text style={styles.buttonText}>Crear ítem</Text>
+            <Text style={styles.buttonText}>Crear proyecto</Text>
           )}
         </Pressable>
 
-        {/* Botón cancelar */}
         <Pressable style={styles.cancel} onPress={() => navigation.goBack()}>
           <Text style={styles.cancelText}>Cancelar</Text>
         </Pressable>
@@ -132,9 +173,8 @@ export function CreateScreen(): React.JSX.Element {
   );
 }
 
-// ============================================================
 // ESTILOS
-// ============================================================
+
 
 const styles = StyleSheet.create({
   flex: { flex: 1, backgroundColor: COLORS.background },
@@ -153,7 +193,19 @@ const styles = StyleSheet.create({
     ...TYPOGRAPHY.body,
     color: COLORS.textPrimary,
   },
-  multiline: { minHeight: 96, paddingTop: SPACING.sm },
+  multiline: { minHeight: 80, paddingTop: SPACING.sm },
+  row: { flexDirection: 'row', gap: SPACING.sm },
+  chip: {
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    borderRadius: RADIUS.full,
+    paddingVertical: SPACING.xs,
+    paddingHorizontal: SPACING.md,
+  },
+  chipActive: { backgroundColor: COLORS.accent, borderColor: COLORS.accent },
+  chipText: { ...TYPOGRAPHY.caption },
+  chipTextActive: { color: COLORS.background, fontWeight: '700' },
+  errorText: { ...TYPOGRAPHY.caption, color: COLORS.error },
   button: {
     backgroundColor: COLORS.accent,
     borderRadius: RADIUS.sm,
