@@ -1,6 +1,5 @@
 // src/screens/HomeScreen.tsx
-// Lista de ítems con pull-to-refresh y acceso a Create / Edit.
-// Esta pantalla ya está funcional — no requiere TODOs.
+// Lista de proyectos con pull-to-refresh. Tocar uno abre el formulario Edit.
 
 import React from 'react';
 import {
@@ -16,19 +15,16 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 import { COLORS, RADIUS, SPACING, TYPOGRAPHY } from '../theme';
 import { useItems } from '../hooks/useItems';
-import type { Item } from '../types';
+import type { Project } from '../types';
 import type { RootStackParamList } from '../navigation/types';
 
 type HomeNavProp = NativeStackNavigationProp<RootStackParamList, 'Home'>;
-
-// ──────────────────────────────────────────────
-// PANTALLA
-// ──────────────────────────────────────────────
 
 export function HomeScreen(): React.JSX.Element {
   const navigation = useNavigation<HomeNavProp>();
   const { data, isLoading, isError, isFetching, refetch } = useItems();
 
+  // Cargando: spinner
   if (isLoading) {
     return (
       <View style={styles.centered}>
@@ -37,6 +33,7 @@ export function HomeScreen(): React.JSX.Element {
     );
   }
 
+  // Error de red: mensaje + botón reintentar
   if (isError) {
     return (
       <View style={styles.centered}>
@@ -56,17 +53,17 @@ export function HomeScreen(): React.JSX.Element {
       keyExtractor={(item) => String(item.id)}
       refreshing={isFetching && !isLoading}
       onRefresh={refetch}
-      ListEmptyComponent={<Text style={styles.empty}>No hay ítems aún</Text>}
+      ListEmptyComponent={<Text style={styles.empty}>No hay proyectos aún</Text>}
       ListHeaderComponent={
-        data?.length
-          ? <Text style={styles.count}>{data.length} ítems</Text>
-          : null
+        data?.length ? (
+          <Text style={styles.count}>{data.length} proyectos</Text>
+        ) : null
       }
       renderItem={({ item }) => (
-        <ItemRow
+        <ProjectRow
           item={item}
           onPress={() =>
-            navigation.navigate('Edit', { id: item.id, name: item.title })
+            navigation.navigate('Edit', { id: item.id, name: item.name })
           }
         />
       )}
@@ -74,22 +71,28 @@ export function HomeScreen(): React.JSX.Element {
   );
 }
 
-// ──────────────────────────────────────────────
-// SUB-COMPONENTE: fila de ítem
-// ──────────────────────────────────────────────
+// Fila de un proyecto
+interface ProjectRowProps {
+  item: Project;
+  onPress: () => void;
+}
 
-interface ItemRowProps { item: Item; onPress: () => void }
-
-function ItemRow({ item, onPress }: ItemRowProps): React.JSX.Element {
+function ProjectRow({ item, onPress }: ProjectRowProps): React.JSX.Element {
   return (
     <Pressable style={styles.row} onPress={onPress}>
       <View style={styles.rowLeft}>
         <View style={styles.avatar}>
-          <Text style={styles.avatarLetter}>{item.title.charAt(0).toUpperCase()}</Text>
+          <Text style={styles.avatarLetter}>
+            {item.name.charAt(0).toUpperCase()}
+          </Text>
         </View>
         <View style={styles.rowText}>
-          <Text style={styles.rowTitle} numberOfLines={1}>{item.title}</Text>
-          <Text style={styles.rowSub} numberOfLines={1}>{item.body}</Text>
+          <Text style={styles.rowTitle} numberOfLines={1}>
+            {item.name}
+          </Text>
+          <Text style={styles.rowSub} numberOfLines={1}>
+            {item.client}
+          </Text>
         </View>
       </View>
       <Text style={styles.chevron}>›</Text>
@@ -97,19 +100,31 @@ function ItemRow({ item, onPress }: ItemRowProps): React.JSX.Element {
   );
 }
 
-// ──────────────────────────────────────────────
-// ESTILOS
-// ──────────────────────────────────────────────
-
 const styles = StyleSheet.create({
   list: { flex: 1, backgroundColor: COLORS.background },
   content: { padding: SPACING.lg, gap: SPACING.sm, paddingBottom: SPACING.xxl },
-  centered: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: SPACING.md, backgroundColor: COLORS.background },
+  centered: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: SPACING.md,
+    backgroundColor: COLORS.background,
+  },
   errorText: { ...TYPOGRAPHY.h3, color: COLORS.errorLight },
-  retryBtn: { backgroundColor: COLORS.accent, borderRadius: RADIUS.sm, paddingHorizontal: SPACING.xl, paddingVertical: SPACING.sm },
+  retryBtn: {
+    backgroundColor: COLORS.accent,
+    borderRadius: RADIUS.sm,
+    paddingHorizontal: SPACING.xl,
+    paddingVertical: SPACING.sm,
+  },
   retryText: { ...TYPOGRAPHY.body, fontWeight: '600', color: COLORS.text },
   empty: { ...TYPOGRAPHY.caption, textAlign: 'center', marginTop: SPACING.xxl },
-  count: { ...TYPOGRAPHY.label, textTransform: 'uppercase', letterSpacing: 0.8, marginBottom: SPACING.sm },
+  count: {
+    ...TYPOGRAPHY.label,
+    textTransform: 'uppercase',
+    letterSpacing: 0.8,
+    marginBottom: SPACING.sm,
+  },
   row: {
     backgroundColor: COLORS.card,
     borderRadius: RADIUS.md,
@@ -120,7 +135,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
   },
-  rowLeft: { flexDirection: 'row', alignItems: 'center', gap: SPACING.sm, flex: 1 },
+  rowLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: SPACING.sm,
+    flex: 1,
+  },
   avatar: {
     width: 40,
     height: 40,

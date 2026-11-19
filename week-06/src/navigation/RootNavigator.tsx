@@ -24,12 +24,12 @@ export function RootNavigator(): React.JSX.Element {
       <Stack.Screen
         name="Home"
         component={HomeScreen}
-        options={{ title: 'Ítems', headerRight: () => <AddButton /> }}
+        options={{ title: 'Proyectos', headerRight: () => <AddButton /> }}
       />
       <Stack.Screen
         name="Create"
         component={CreateScreen}
-        options={{ title: 'Nuevo ítem', presentation: 'modal' }}
+        options={{ title: 'Nuevo proyecto', presentation: 'modal' }}
       />
       <Stack.Screen
         name="Edit"
@@ -42,10 +42,13 @@ export function RootNavigator(): React.JSX.Element {
 
 // Botón "+" en el header de Home
 function AddButton(): React.JSX.Element {
-  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const navigation =
+    useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   return (
     <Pressable onPress={() => navigation.navigate('Create')} hitSlop={8}>
-      <Text style={{ fontSize: 24, color: COLORS.accent, fontWeight: '300' }}>+</Text>
+      <Text style={{ fontSize: 24, color: COLORS.accent, fontWeight: '300' }}>
+        +
+      </Text>
     </Pressable>
   );
 }
