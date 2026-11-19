@@ -1,0 +1,13 @@
+{
+  "expo": {
+    "name": "week-06-formularios",
+    "slug": "week-06-formularios",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "newArchEnabled": true,
+    "ios": {
+      "supportsTablet": true
+    },
+    "android": {}
+  }
+}
