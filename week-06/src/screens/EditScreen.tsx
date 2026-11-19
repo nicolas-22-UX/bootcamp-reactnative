@@ -1,7 +1,5 @@
 // src/screens/EditScreen.tsx
-// Formulario para editar un ítem existente.
-// Carga los datos actuales del servidor y rellena el formulario con defaultValues.
-// TODO: [EXTRA] conectar useItemById + reset en useEffect + useUpdateItem mutation.
+// Formulario para editar un proyecto: carga los datos y rellena el form con reset()
 
 import React, { useEffect } from 'react';
 import {
@@ -17,97 +15,70 @@ import {
 import { useNavigation, useRoute } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { RouteProp } from '@react-navigation/native';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import type { z } from 'zod';
 
 import { COLORS, RADIUS, SPACING, TYPOGRAPHY } from '../theme';
 import type { RootStackParamList } from '../navigation/types';
 import { FormField } from '../components/FormField';
-
-// TODO: [EXTRA] importar useForm y zodResolver
-// import { useForm } from 'react-hook-form';
-// import { zodResolver } from '@hookform/resolvers/zod';
-// import { itemSchema, type ItemFormData } from '../schemas/itemSchema';
-
-// TODO: [EXTRA] importar los hooks de datos
-// import { useItemById, useUpdateItem } from '../hooks/useItems';
+import { itemSchema, type ItemFormData } from '../schemas/itemSchema';
+import { useItemById, useUpdateItem } from '../hooks/useItems';
 
 type EditNavProp = NativeStackNavigationProp<RootStackParamList, 'Edit'>;
 type EditRouteProp = RouteProp<RootStackParamList, 'Edit'>;
-
-// ──────────────────────────────────────────────
-// PANTALLA
-// ──────────────────────────────────────────────
 
 export function EditScreen(): React.JSX.Element {
   const navigation = useNavigation<EditNavProp>();
   const route = useRoute<EditRouteProp>();
   const { id } = route.params;
 
-  // TODO: [EXTRA] obtener el ítem actual del servidor
-  // ─────────────────────────────────────────────
-  // const { data: item, isLoading } = useItemById(id);
+  // Pide el proyecto actual al servidor
+  const { data: item, isLoading } = useItemById(id);
 
-  // Placeholder hasta que implementes el TODO
-  const isLoading = false;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const item: any = undefined;
+  const {
+    control,
+    handleSubmit,
+    reset,
+    formState: { errors, isSubmitting, isDirty },
+  } = useForm<z.input<typeof itemSchema>, unknown, ItemFormData>({
+    resolver: zodResolver(itemSchema),
+    defaultValues: {
+      name: '',
+      subtitle: '',
+      client: '',
+      deliveryDate: '',
+      budget: '',
+    },
+  });
 
-  // TODO: [EXTRA] inicializar useForm con zodResolver
-  // ─────────────────────────────────────────────
-  // const {
-  //   control,
-  //   handleSubmit,
-  //   reset,
-  //   formState: { errors, isSubmitting, isDirty },
-  // } = useForm<ItemFormData>({
-  //   resolver: zodResolver(itemSchema),
-  //   defaultValues: { title: '', body: '' },
-  // });
-
-  // Placeholders
-  const isSubmitting = false;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const errors: any = {};
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const control: any = undefined;
-  const isDirty = true;
-
-  // TODO: [EXTRA] cuando el ítem se carga del servidor, rellenar el formulario.
-  // ─────────────────────────────────────────────
-  // Patrón clave de esta semana: reset() + useEffect
-  //
-  // useEffect(() => {
-  //   if (item) {
-  //     reset({
-  //       title: item.title,
-  //       body: item.body ?? '',
-  //       // TODO: [EXTRA] agrega los campos de tu dominio aquí
-  //     });
-  //   }
-  // }, [item, reset]);
-
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+  // Cuando llega el proyecto del servidor, rellena el formulario
   useEffect(() => {
-    // Remove this useEffect once you implement the real one above.
-  }, [item]);
+    if (item) {
+      reset({
+        name: item.name,
+        subtitle: item.subtitle ?? '',
+        client: item.client,
+        deliveryDate: item.deliveryDate,
+        budget: item.budget !== undefined ? String(item.budget) : '',
+      });
+    }
+  }, [item, reset]);
 
-  // TODO: [EXTRA] inicializar la mutation de actualización
-  // const { mutate: updateItem, isPending } = useUpdateItem();
-  const isPending = false;
+  const { mutate: updateItem, isPending, isError, error } = useUpdateItem();
 
-  // TODO: [EXTRA] implementar la función onSubmit
-  // ─────────────────────────────────────────────
-  // function onSubmit(data: ItemFormData): void {
-  //   updateItem(
-  //     { id, title: data.title, body: data.body ?? '', userId: 1 },
-  //     {
-  //       onSuccess: () => navigation.goBack(),
-  //     },
-  //   );
-  // }
+  // Solo se ejecuta si Zod valida bien; conserva id y status del proyecto
+  function onSubmit(data: ItemFormData): void {
+    if (!item) return;
+    updateItem(
+      { ...item, ...data },
+      { onSuccess: () => navigation.goBack() },
+    );
+  }
 
   const canSubmit = !isSubmitting && !isPending && isDirty;
 
-  // Mientras carga los datos del servidor, mostrar indicador de carga
+  // Mientras carga los datos del servidor: spinner
   if (isLoading) {
     return (
       <View style={styles.centered}>
@@ -126,67 +97,83 @@ export function EditScreen(): React.JSX.Element {
         contentContainerStyle={styles.content}
         keyboardShouldPersistTaps="handled"
       >
-        <Text style={styles.hint}>
-          Los campos se rellenan automáticamente con los datos actuales del ítem.
-          Modifica lo que necesites y guarda.
-        </Text>
-
-        {/* TODO: [EXTRA] usa los mismos FormField que en CreateScreen */}
-
         <FormField
           control={control}
-          name="title"
+          name="name"
           label="Nombre *"
-          placeholder="Nombre del ítem…"
+          placeholder="Nombre del proyecto…"
           returnKeyType="next"
-          errorMessage={errors.title?.message}
+          errorMessage={errors.name?.message}
         />
-
         <FormField
           control={control}
-          name="body"
+          name="subtitle"
           label="Descripción"
-          placeholder="Descripción opcional…"
+          placeholder="De qué trata el proyecto…"
           multiline
           numberOfLines={4}
           textAlignVertical="top"
-          errorMessage={errors.body?.message}
+          errorMessage={errors.subtitle?.message}
+        />
+        <FormField
+          control={control}
+          name="client"
+          label="Cliente *"
+          placeholder="Nombre del cliente…"
+          errorMessage={errors.client?.message}
+        />
+        <FormField
+          control={control}
+          name="deliveryDate"
+          label="Fecha de entrega * (AAAA-MM-DD)"
+          placeholder="2026-12-01"
+          errorMessage={errors.deliveryDate?.message}
+        />
+        <FormField
+          control={control}
+          name="budget"
+          label="Presupuesto (USD) *"
+          placeholder="0"
+          keyboardType="numeric"
+          errorMessage={errors.budget?.message}
         />
 
-        {/* TODO: [EXTRA] agrega los campos adicionales de tu dominio */}
+        {/* Si el PUT falla, se muestra el mensaje */}
+        {isError && <Text style={styles.serverError}>Error: {error.message}</Text>}
 
         <View style={styles.actions}>
           <Pressable
             style={[styles.button, !canSubmit && styles.buttonDisabled]}
-            // onPress={handleSubmit(onSubmit)}   ← descomentar al implementar
+            onPress={handleSubmit(onSubmit)}
             disabled={!canSubmit}
           >
-            {isSubmitting || isPending
-              ? <ActivityIndicator size="small" color={COLORS.background} />
-              : <Text style={styles.buttonText}>Guardar cambios</Text>
-            }
+            {isSubmitting || isPending ? (
+              <ActivityIndicator size="small" color={COLORS.background} />
+            ) : (
+              <Text style={styles.buttonText}>Guardar cambios</Text>
+            )}
           </Pressable>
 
           <Pressable style={styles.cancel} onPress={() => navigation.goBack()}>
             <Text style={styles.cancelText}>Cancelar</Text>
           </Pressable>
         </View>
-
       </ScrollView>
     </KeyboardAvoidingView>
   );
 }
 
-// ──────────────────────────────────────────────
-// ESTILOS
-// ──────────────────────────────────────────────
-
 const styles = StyleSheet.create({
   flex: { flex: 1, backgroundColor: COLORS.background },
   container: { flex: 1 },
   content: { padding: SPACING.lg, gap: SPACING.md, paddingBottom: SPACING.xxl },
-  centered: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: COLORS.background },
-  hint: { ...TYPOGRAPHY.caption, fontStyle: 'italic' },
+  centered: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: COLORS.background,
+  },
+  serverError: { ...TYPOGRAPHY.error },
   actions: { gap: SPACING.sm, marginTop: SPACING.sm },
   button: {
     backgroundColor: COLORS.accent,
