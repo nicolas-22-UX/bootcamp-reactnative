@@ -1,31 +1,33 @@
 // src/schemas/itemSchema.ts
-// Schema Zod para el formulario de ítem.
-// TODO: adaptar los campos a tu dominio asignado.
+// Schema Zod del formulario de proyecto (Create y Edit)
 
 import { z } from 'zod';
 
 export const itemSchema = z.object({
-  // TODO: renombra y ajusta los campos a tu dominio
-  // Ejemplos:
-  // Biblioteca  → title (título del libro), author (autor), pages (z.coerce.number)
-  // Farmacia    → name (nombre), price (z.coerce.number), stock (z.coerce.number)
-  // Restaurante → name (platillo), description, price (z.coerce.number)
-
-  title: z
+  // Nombre del proyecto: obligatorio
+  name: z
     .string()
-    .min(1, 'El nombre es requerido')
+    .trim()
+    .min(2, 'El nombre debe tener al menos 2 caracteres')
     .max(80, 'Máx. 80 caracteres'),
 
-  body: z
-    .string()
-    .max(500, 'Máx. 500 caracteres')
-    .optional()
-    .or(z.literal('')),
+  // Descripción corta: opcional
+  subtitle: z.string().trim().max(200, 'Máx. 200 caracteres'),
 
-  // TODO: agrega campos numéricos con z.coerce.number()
-  // Ejemplo:
-  // price: z.coerce.number().positive('El precio debe ser mayor que 0'),
+  // Cliente: obligatorio
+  client: z.string().trim().min(2, 'El cliente es requerido'),
+
+  // Fecha de entrega: formato AAAA-MM-DD
+  deliveryDate: z
+    .string()
+    .trim()
+    .regex(/^\d{4}-\d{2}-\d{2}$/, 'Usa el formato AAAA-MM-DD'),
+
+  // Presupuesto: el TextInput da texto, coerce lo convierte a número
+  budget: z.coerce
+    .number({ message: 'Escribe un número válido' })
+    .positive('El presupuesto debe ser mayor que 0'),
 });
 
-// El tipo TypeScript se infiere automáticamente — sin interfaz duplicada
+// El tipo TypeScript se infiere del schema: sin interfaz duplicada
 export type ItemFormData = z.infer<typeof itemSchema>;
