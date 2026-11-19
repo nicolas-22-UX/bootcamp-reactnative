@@ -1,23 +1,22 @@
 // src/types/index.ts
-// Tipos de datos del dominio — adapta los campos a tu dominio asignado
+// Tipos del dominio: empresa de proyectos de software
 
-export interface Item {
-  id: number;
-  title: string;   // TODO: renombrar al concepto de tu dominio (ej. name, productName)
-  body: string;    // TODO: renombrar (ej. description, notes)
-  userId: number;
+// Los 3 estados posibles de un proyecto
+export type ProjectStatus = 'active' | 'warranty' | 'paused';
+
+// Modelo principal: un proyecto tal como lo devuelve la API
+export interface Project {
+  id: string | number; // lo asigna el servidor
+  name: string;
+  subtitle: string;
+  client: string;
+  status: ProjectStatus;
+  deliveryDate: string;
+  budget?: number; // presupuesto en USD (nuevo en semana 6)
 }
 
-// Payload para crear un ítem nuevo (sin id — lo asigna el servidor)
-export interface CreateItemPayload {
-  title: string;
-  body: string;
-  userId: number;
-}
+// Lo que se envía en el POST: el proyecto sin 'id'
+export type CreateProjectPayload = Omit<Project, 'id'>;
 
-// Payload para actualizar (id requerido + campos editables)
-export interface UpdateItemPayload {
-  id: number;
-  title: string;
-  body: string;
-}
+// Lo que se envía en el PUT: id obligatorio + campos editables
+export type UpdateProjectPayload = Project;
