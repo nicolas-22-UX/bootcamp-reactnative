@@ -1,65 +1,74 @@
 // src/hooks/useItems.ts
-// Custom hooks para CRUD de ítems usando TanStack Query + Axios
+// Hooks de datos de proyectos (TanStack Query + Axios)
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { apiClient } from '../services/api';
-import type { CreateItemPayload, Item, UpdateItemPayload } from '../types';
+import type {
+  CreateProjectPayload,
+  Project,
+  UpdateProjectPayload,
+} from '../types';
 
-export const ITEMS_QUERY_KEY = ['items'] as const;
+// Una sola llave para todo: evita typos al invalidar el caché
+export const ITEMS_QUERY_KEY = ['projects'] as const;
 
-// ─────────────────────────────────────────
-// READ — lista de ítems
-// ─────────────────────────────────────────
-
+// READ: lista de proyectos
 export function useItems() {
-  return useQuery<Item[]>({
+  return useQuery<Project[], Error>({
     queryKey: ITEMS_QUERY_KEY,
-    queryFn: () => apiClient.get<Item[]>('/posts?_limit=15').then(r => r.data),
+    queryFn: async () => {
+      const { data } = await apiClient.get<Project[]>('/projects');
+      return data;
+    },
   });
 }
 
-// ─────────────────────────────────────────
-// READ — ítem individual (para formulario Edit)
-// ─────────────────────────────────────────
-
-export function useItemById(id: number | string) {
-  return useQuery<Item>({
+// READ: un proyecto por id (lo usa el formulario Edit)
+export function useItemById(id: string | number) {
+  return useQuery<Project, Error>({
     queryKey: [...ITEMS_QUERY_KEY, id],
-    queryFn: () => apiClient.get<Item>(`/posts/${id}`).then(r => r.data),
+    queryFn: async () => {
+      const { data } = await apiClient.get<Project>(`/projects/${id}`);
+      return data;
+    },
+    // Solo corre si hay un id válido
     enabled: !!id,
   });
 }
 
-// ─────────────────────────────────────────
-// CREATE
-// ─────────────────────────────────────────
-
+// CREATE: crear un proyecto (POST)
 export function useCreateItem() {
   const queryClient = useQueryClient();
-  return useMutation<Item, Error, CreateItemPayload>({
-    mutationFn: (payload) =>
-      apiClient.post<Item>('/posts', payload).then(r => r.data),
+  return useMutation<Project, Error, CreateProjectPayload>({
+    mutationFn: async (payload) => {
+      const { data } = await apiClient.post<Project>('/projects', payload);
+      return data;
+    },
     onSuccess: () => {
-      // Invalidar la lista para que se refresque automáticamente
+      // Invalida la lista para que se vuelva a pedir al servidor
       queryClient.invalidateQueries({ queryKey: ITEMS_QUERY_KEY });
     },
   });
 }
 
-// ─────────────────────────────────────────
-// UPDATE — para el formulario Edit
-// ─────────────────────────────────────────
-
+// UPDATE: editar un proyecto (PUT)
 export function useUpdateItem() {
   const queryClient = useQueryClient();
-  return useMutation<Item, Error, UpdateItemPayload>({
-    mutationFn: (payload) =>
-      apiClient.put<Item>(`/posts/${payload.id}`, payload).then(r => r.data),
+  return useMutation<Project, Error, UpdateProjectPayload>({
+    mutationFn: async (payload) => {
+      const { data } = await apiClient.put<Project>(
+        `/projects/${payload.id}`,
+        payload,
+      );
+      return data;
+    },
     onSuccess: (_, variables) => {
-      // Invalidar lista e ítem individual
+      // Invalida la lista y el proyecto individual
       queryClient.invalidateQueries({ queryKey: ITEMS_QUERY_KEY });
-      queryClient.invalidateQueries({ queryKey: [...ITEMS_QUERY_KEY, variables.id] });
+      queryClient.invalidateQueries({
+        queryKey: [...ITEMS_QUERY_KEY, variables.id],
+      });
     },
   });
 }
